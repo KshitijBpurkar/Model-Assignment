@@ -9,10 +9,10 @@ img=cv.imread("Photos/Metal picture.png") #reading image
 canny=cv.Canny(img,150,175)
 
 w,h =img.shape[1],img.shape[0] #Reading dimensions of the image
-low=0 #To count pixels will low intensity
-mean=np.average(canny) #Average of all pixels
+low=0                          #To count pixels will low intensity
+mean=np.average(canny)          #Average of all pixels
 
-for element in img[:]: #Each row of image array
+for element in img[:]:       #Each row of image array
     for value in element[:]: #Each pixel in row
      if(value[0]<mean):
          low+=1           #Counting pixels with low intensity
