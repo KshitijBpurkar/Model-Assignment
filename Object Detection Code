@@ -1,0 +1,69 @@
+#Importing libraries
+import cv2 as cv
+import numpy as np
+import matplotlib.pyplot as plt
+
+#Copying paths of Yolo Files
+net=cv.dnn.readNet("yolo.config")
+
+things= [] #List of all items detected
+
+with open("coco.names",'r') as f:
+    things=f.read().splitlines() #Reading the items
+   
+path=input("Enter path of image: ") #Taking input from user
+img=cv.imread(path)
+width, height =img.shape[1], img.shape[0]
+new_img=cv.dnn.blobFromImage(img,1/255,(320,320),(0,0,0),swapRB=True,crop=False)
+i=new_img[0].reshape(320,320,3)
+plt.imshow(i)
+
+net.setInput(new_img) #Using the yolo method from 'net' i.e inputted yolo files
+
+output_names=net.getUnconnectedOutLayersNames()
+layeroutput=net.forward(output_names)
+
+boxes=[]        #Lists to store various parameters associated with each object detected
+confidences=[]
+class_ids=[]
+
+for output in layeroutput:
+    for detected in output:
+        score=detected[5:] #First 4 elements are quantities associated with box, reat values are confidences
+        class_id=np.argmax(score) #Considering object with maximum confidence
+        confidence=score[class_id]
+        if confidence>0.8:         #Confidence threshold
+          centre_x=int(detected[0]*width)    
+          centre_y=int(detected[1]*height)
+          w=int(detected[2]*width) 
+          h=int(detected[3]*height) 
+        
+          x=int(centre_x-w/2)
+          y=int(centre_y-h/2)
+
+
+          boxes.append([x,y,w,h]) #Passing box parameters
+          confidences.append(float(confidence)) #Appending confidences 
+          class_ids.append(class_id) #Appending id of associated objects
+
+#Storing box parameters and confidences
+indexes=cv.dnn.NMSBoxes(boxes,confidences,0.5,0.4)
+if len(boxes)==0:
+    print("Nothing detected")
+
+#Setting font and generating random colours
+fonts=cv.FONT_HERSHEY_COMPLEX_SMALL
+colors=np.random.uniform(0,255,size=(len(boxes),3))
+
+for i in indexes.flatten():
+    x,y,w,h=boxes[i]
+
+    label=str(things[class_ids[i]])
+    color=colors[i]
+    confi=str(round(confidences[i],2))
+
+    cv.rectangle(img,(x,y),(x+w,y+h),color,2) #Making box around object
+    cv.putText(img,label+" "+confi+" "+str(w)+"*"+str(h),(x,y),fonts,1,color=(255,255,255),thickness=2) #Showing object name, confidence and dimensions
+
+cv.imshow("Final",img)
+cv.waitKey(0)
