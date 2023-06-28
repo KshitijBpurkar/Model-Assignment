@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #Copying paths of Yolo Files
-net=cv.dnn.readNet("yolo.config")
+net=cv.dnn.readNet("yolov3.weights","yolo.config")
 
 things= [] #List of all items detected
 
